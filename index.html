@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Binaural Beats Generator - Deep Work Focus</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+        }
+        .container {
+            background-color: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        .controls {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+        label {
+            font-weight: bold;
+        }
+        input[type="range"] {
+            width: 100%;
+        }
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        button {
+            padding: 10px 15px;
+            background-color: #3498db;
+            border: none;
+            border-radius: 4px;
+            color: white;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.2s;
+        }
+        button:hover {
+            background-color: #2980b9;
+        }
+        button.stop {
+            background-color: #e74c3c;
+        }
+        button.stop:hover {
+            background-color: #c0392b;
+        }
+        .display {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 10px;
+        }
+        .info-panel {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #ecf0f1;
+            border-radius: 8px;
+        }
+        .presets {
+            margin-top: 20px;
+        }
+        .preset-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        .preset-button {
+            background-color: #27ae60;
+        }
+        .deep-work {
+            background-color: #8e44ad;
+        }
+        .preset-button:hover {
+            background-color: #219955;
+        }
+        .deep-work:hover {
+            background-color: #7d3c98;
+        }
+        .active {
+            border: 2px solid #f39c12;
+            box-shadow: 0 0 5px rgba(243, 156, 18, 0.5);
+        }
+        .timer-section {
+            margin-top: 20px;
+        }
+        .timer-display {
+            font-size: 24px;
+            text-align: center;
+            margin: 10px 0;
+            font-weight: bold;
+        }
+        .timer-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+        }
+        .timer-button {
+            background-color: #f39c12;
+        }
+        .timer-button:hover {
+            background-color: #e67e22;
+        }
+        .status-indicator {
+            height: 15px;
+            width: 15px;
+            border-radius: 50%;
+            display: inline-block;
+            background-color: #e74c3c;
+            margin-left: 10px;
+        }
+        .status-indicator.active {
+            background-color: #2ecc71;
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+        .status-text {
+            margin-left: 5px;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Binaural Beats Generator - Deep Work</h1>
+        
+        <div class="controls">
+            <div class="status-bar">
+                <span>Status: </span>
+                <span class="status-indicator" id="statusIndicator"></span>
+                <span class="status-text" id="statusText">Stopped</span>
+            </div>
+            
+            <div class="control-group">
+                <label for="baseFrequency">Base Frequency (Hz): <span id="baseFrequencyValue">220</span></label>
+                <input type="range" id="baseFrequency" min="100" max="500" value="220" step="1">
+            </div>
+            
+            <div class="control-group">
+                <label for="binauralBeat">Binaural Beat Frequency (Hz): <span id="binauralBeatValue">17</span></label>
+                <input type="range" id="binauralBeat" min="0.5" max="30" value="17" step="0.5">
+            </div>
+            
+            <div class="control-group">
+                <label for="volume">Volume: <span id="volumeValue">30</span>%</label>
+                <input type="range" id="volume" min="0" max="100" value="30" step="1">
+            </div>
+            
+            <div class="button-group">
+                <button id="playButton">Start Deep Focus Session</button>
+                <button id="stopButton" class="stop">Stop</button>
+            </div>
+            
+            <div class="display">
+                <div>Left Ear: <span id="leftFreq">220</span> Hz</div>
+                <div>Right Ear: <span id="rightFreq">237</span> Hz</div>
+                <div>Difference: <span id="beatFreq">17</span> Hz</div>
+            </div>
+        </div>
+        
+        <div class="timer-section">
+            <h3>Focus Timer</h3>
+            <div class="timer-display" id="timerDisplay">25:00</div>
+            <div class="timer-buttons">
+                <button class="timer-button" id="timer25">25 min</button>
+                <button class="timer-button" id="timer45">45 min</button>
+                <button class="timer-button" id="timer60">60 min</button>
+                <button class="timer-button" id="timerReset">Reset</button>
+            </div>
+        </div>
+        
+        <div class="presets">
+            <h3>Presets</h3>
+            <div class="preset-buttons">
+                <button class="preset-button deep-work active" data-base="220" data-beat="17">Deep Work (Beta: 17 Hz)</button>
+                <button class="preset-button" data-base="220" data-beat="15">High Focus (Beta: 15 Hz)</button>
+                <button class="preset-button" data-base="200" data-beat="10">Light Focus (Alpha: 10 Hz)</button>
+                <button class="preset-button" data-base="220" data-beat="5">Relaxation (Theta: 5 Hz)</button>
+                <button class="preset-button" data-base="250" data-beat="2">Deep Meditation (Delta: 2 Hz)</button>
+            </div>
+        </div>
+        
+        <div class="info-panel">
+            <h3>Optimized for Deep Work</h3>
+            <p>This binaural beats generator is pre-configured for maximum focus and deep work, using the optimal Beta frequency range (17 Hz) for active thinking and alertness.</p>
+            <p><strong>Current Settings:</strong></p>
+            <ul>
+                <li><strong>Base frequency:</strong> 220 Hz (comfortable for most people)</li>
+                <li><strong>Binaural beat:</strong> 17 Hz (optimal Beta range for deep focus)</li>
+                <li><strong>Duration:</strong> Use the timer for focused work sessions</li>
+            </ul>
+            <p><strong>Important:</strong> Use headphones for proper binaural beat effect. Start with lower volumes to protect your hearing.</p>
+        </div>
+    </div>
+
+    <script>
+        // AudioContext setup
+        let audioContext;
+        let oscillatorLeft;
+        let oscillatorRight;
+        let gainNode;
+        let isPlaying = false;
+        
+        // Timer variables
+        let timerInterval;
+        let timerMinutes = 25;
+        let timerSeconds = 0;
+        let timerRunning = false;
+        
+        // DOM elements
+        const baseFrequencySlider = document.getElementById('baseFrequency');
+        const baseFrequencyValue = document.getElementById('baseFrequencyValue');
+        const binauralBeatSlider = document.getElementById('binauralBeat');
+        const binauralBeatValue = document.getElementById('binauralBeatValue');
+        const volumeSlider = document.getElementById('volume');
+        const volumeValue = document.getElementById('volumeValue');
+        const playButton = document.getElementById('playButton');
+        const stopButton = document.getElementById('stopButton');
+        const leftFreqDisplay = document.getElementById('leftFreq');
+        const rightFreqDisplay = document.getElementById('rightFreq');
+        const beatFreqDisplay = document.getElementById('beatFreq');
+        const presetButtons = document.querySelectorAll('.preset-button');
+        const statusIndicator = document.getElementById('statusIndicator');
+        const statusText = document.getElementById('statusText');
+        
+        // Timer elements
+        const timerDisplay = document.getElementById('timerDisplay');
+        const timer25Button = document.getElementById('timer25');
+        const timer45Button = document.getElementById('timer45');
+        const timer60Button = document.getElementById('timer60');
+        const timerResetButton = document.getElementById('timerReset');
+        
+        // Update display values
+        baseFrequencySlider.addEventListener('input', updateFrequencyDisplay);
+        binauralBeatSlider.addEventListener('input', updateFrequencyDisplay);
+        volumeSlider.addEventListener('input', updateVolumeDisplay);
+        
+        // Button event listeners
+        playButton.addEventListener('click', startTones);
+        stopButton.addEventListener('click', stopTones);
+        
+        // Timer button listeners
+        timer25Button.addEventListener('click', () => setTimer(25));
+        timer45Button.addEventListener('click', () => setTimer(45));
+        timer60Button.addEventListener('click', () => setTimer(60));
+        timerResetButton.addEventListener('click', resetTimer);
+        
+        // Preset buttons
+        presetButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                const baseFreq = parseFloat(button.dataset.base);
+                const beatFreq = parseFloat(button.dataset.beat);
+                
+                baseFrequencySlider.value = baseFreq;
+                binauralBeatSlider.value = beatFreq;
+                
+                updateFrequencyDisplay();
+                
+                // Update active button
+                presetButtons.forEach(btn => btn.classList.remove('active'));
+                button.classList.add('active');
+                
+                if (isPlaying) {
+                    updateOscillators();
+                }
+            });
+        });
+        
+        // Initial display update
+        updateFrequencyDisplay();
+        updateVolumeDisplay();
+        
+        function updateFrequencyDisplay() {
+            const baseFreq = parseFloat(baseFrequencySlider.value);
+            const beatFreq = parseFloat(binauralBeatSlider.value);
+            
+            baseFrequencyValue.textContent = baseFreq;
+            binauralBeatValue.textContent = beatFreq;
+            
+            leftFreqDisplay.textContent = baseFreq;
+            rightFreqDisplay.textContent = (baseFreq + beatFreq).toFixed(1);
+            beatFreqDisplay.textContent = beatFreq;
+            
+            if (isPlaying) {
+                updateOscillators();
+            }
+        }
+        
+        function updateVolumeDisplay() {
+            const volumeVal = volumeSlider.value;
+            volumeValue.textContent = volumeVal;
+            
+            if (gainNode) {
+                gainNode.gain.value = volumeVal / 100;
+            }
+        }
+        
+        function startTones() {
+            if (isPlaying) return;
+            
+            // Create audio context if it doesn't exist
+            if (!audioContext) {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            
+            // Create gain node for volume control
+            gainNode = audioContext.createGain();
+            gainNode.gain.value = volumeSlider.value / 100;
+            gainNode.connect(audioContext.destination);
+            
+            // Create stereo panner for left channel
+            const pannerLeft = audioContext.createStereoPanner();
+            pannerLeft.pan.value = -1; // Full left
+            pannerLeft.connect(gainNode);
+            
+            // Create stereo panner for right channel
+            const pannerRight = audioContext.createStereoPanner();
+            pannerRight.pan.value = 1; // Full right
+            pannerRight.connect(gainNode);
+            
+            // Create oscillators
+            oscillatorLeft = audioContext.createOscillator();
+            oscillatorRight = audioContext.createOscillator();
+            
+            // Set oscillator types to sine wave (pure tone)
+            oscillatorLeft.type = 'sine';
+            oscillatorRight.type = 'sine';
+            
+            // Set frequencies
+            const baseFreq = parseFloat(baseFrequencySlider.value);
+            const beatFreq = parseFloat(binauralBeatSlider.value);
+            
+            oscillatorLeft.frequency.value = baseFreq;
+            oscillatorRight.frequency.value = baseFreq + beatFreq;
+            
+            // Connect oscillators to panners
+            oscillatorLeft.connect(pannerLeft);
+            oscillatorRight.connect(pannerRight);
+            
+            // Start oscillators
+            oscillatorLeft.start();
+            oscillatorRight.start();
+            
+            isPlaying = true;
+            playButton.textContent = "Playing";
+            playButton.disabled = true;
+            
+            // Update status indicator
+            statusIndicator.classList.add('active');
+            statusText.textContent = "Active";
+            
+            // Start timer if not running
+            if (!timerRunning) {
+                startTimer();
+            }
+        }
+        
+        function stopTones() {
+            if (!isPlaying) return;
+            
+            // Stop oscillators
+            oscillatorLeft.stop();
+            oscillatorRight.stop();
+            
+            // Clean up
+            oscillatorLeft.disconnect();
+            oscillatorRight.disconnect();
+            
+            oscillatorLeft = null;
+            oscillatorRight = null;
+            
+            isPlaying = false;
+            playButton.textContent = "Start Deep Focus Session";
+            playButton.disabled = false;
+            
+            // Update status indicator
+            statusIndicator.classList.remove('active');
+            statusText.textContent = "Stopped";
+            
+            // Pause timer
+            pauseTimer();
+        }
+        
+        function updateOscillators() {
+            if (!isPlaying) return;
+            
+            const baseFreq = parseFloat(baseFrequencySlider.value);
+            const beatFreq = parseFloat(binauralBeatSlider.value);
+            
+            oscillatorLeft.frequency.value = baseFreq;
+            oscillatorRight.frequency.value = baseFreq + beatFreq;
+        }
+        
+        // Timer functions
+        function setTimer(minutes) {
+            timerMinutes = minutes;
+            timerSeconds = 0;
+            updateTimerDisplay();
+            
+            // If already playing, restart timer
+            if (timerRunning) {
+                clearInterval(timerInterval);
+                startTimer();
+            }
+        }
+        
+        function startTimer() {
+            if (timerRunning) return;
+            
+            timerRunning = true;
+            timerInterval = setInterval(updateTimer, 1000);
+        }
+        
+        function pauseTimer() {
+            timerRunning = false;
+            clearInterval(timerInterval);
+        }
+        
+        function resetTimer() {
+            pauseTimer();
+            timerMinutes = 25;
+            timerSeconds = 0;
+            updateTimerDisplay();
+        }
+        
+        function updateTimer() {
+            if (timerSeconds > 0) {
+                timerSeconds--;
+            } else if (timerMinutes > 0) {
+                timerMinutes--;
+                timerSeconds = 59;
+            } else {
+                // Timer completed
+                pauseTimer();
+                if (isPlaying) {
+                    stopTones();
+                }
+                // Optionally play a notification sound here
+                alert("Focus session completed!");
+            }
+            
+            updateTimerDisplay();
+        }
+        
+        function updateTimerDisplay() {
+            const minutesStr = timerMinutes.toString().padStart(2, '0');
+            const secondsStr = timerSeconds.toString().padStart(2, '0');
+            timerDisplay.textContent = `${minutesStr}:${secondsStr}`;
+        }
+        
+        // Check for browser support on load
+        window.addEventListener('load', function() {
+            if (!window.AudioContext && !window.webkitAudioContext) {
+                alert("Your browser doesn't support the Web Audio API. Please use a modern browser like Chrome, Firefox, or Edge.");
+                playButton.disabled = true;
+            }
+        });
+    </script>
+</body>
+</html>
